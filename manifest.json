@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "页笺 · 网页 Markdown 笔记",
+  "version": "1.1.0",
+  "description": "在网页上打开一扇可拖拽、可缩放的 Markdown 笔记窗。",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardWrite",
+    "downloads",
+    "unlimitedStorage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "打开或收起页笺",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+N",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "panel.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none';"
+  }
+}

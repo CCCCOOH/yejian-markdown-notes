@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>页笺 · Markdown 笔记</title>
+  <link rel="stylesheet" href="panel.css">
+  <script type="module" src="panel.js"></script>
+</head>
+<body>
+  <svg class="symbol-bank" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-brand" viewBox="0 0 24 24"><path d="M6.5 3.5h8.6l3.4 3.4v13.6h-12zM14.5 3.5v4h4M9.5 12h6m-6 3.5h4"/></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5"/></symbol>
+    <symbol id="i-bold" viewBox="0 0 24 24"><path d="M7 4h6.5a4 4 0 0 1 0 8H7V4Zm0 8h7.5a4 4 0 0 1 0 8H7v-8Z"/></symbol>
+    <symbol id="i-italic" viewBox="0 0 24 24"><path d="M10 4h8M6 20h8m1-16-6 16"/></symbol>
+    <symbol id="i-strike" viewBox="0 0 24 24"><path d="M17 7c0-2-2-3-5-3s-5 1.4-5 4c0 1.5.9 2.4 2.4 3M7 17c0 2 2.3 3 5 3 3.3 0 5-1.5 5-4 0-1.2-.6-2.3-1.9-3M4 12h16"/></symbol>
+    <symbol id="i-bullet" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.1M4 12h.1M4 18h.1"/></symbol>
+    <symbol id="i-ordered" viewBox="0 0 24 24"><path d="M10 6h10m-10 6h10m-10 6h10M4 5l1-1v5M3.5 14c0-2 3-2 3-.1 0 1.4-3 2.5-3 4.1h3"/></symbol>
+    <symbol id="i-task" viewBox="0 0 24 24"><rect x="3" y="4" width="17" height="16" rx="2"/><path d="m7 12 3 3 6-6"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M10 7C6 7 4 10 4 14v3h6v-6H6m14-4c-4 0-6 3-6 7v3h6v-6h-4"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="m9 15 6-6m-7 9-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m5-4 1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" transform="translate(1 0) scale(.92 1)"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M5 12h.1m6.9 0h.1m6.9 0h.1" stroke-width="3"/></symbol>
+    <symbol id="i-resize" viewBox="0 0 24 24"><path d="m8 19 11-11m-5 11 5-5"/></symbol>
+  </svg>
+
+  <p id="loading" role="status">正在打开页笺…</p>
+  <div class="app" id="app" hidden>
+    <header class="titlebar" id="drag-handle">
+      <span class="brand-mark"><svg class="icon"><use href="#i-brand"/></svg></span>
+      <div class="brand">页笺</div>
+      <button class="icon-button" id="toggle-library" aria-label="显示或隐藏笔记列表" aria-controls="library" aria-expanded="true" title="显示或隐藏笔记列表">
+        <svg class="icon"><use href="#i-sidebar"/></svg>
+      </button>
+      <span class="spacer"></span>
+      <button class="icon-button" id="close-panel" aria-label="收起笔记窗口" title="收起笔记窗口 (Esc)"><svg class="icon"><use href="#i-close"/></svg></button>
+    </header>
+
+    <div class="workspace">
+      <aside class="library" id="library" aria-label="我的笔记">
+        <div class="library-heading">
+          <h2>我的笔记</h2>
+          <button class="new-button" id="new-note" type="button" title="新建笔记"><svg class="icon"><use href="#i-plus"/></svg>新建</button>
+        </div>
+        <label class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="search" type="search" placeholder="搜索笔记" aria-label="搜索笔记" autocomplete="off">
+        </label>
+        <div id="note-list" class="note-list"></div>
+        
+      </aside>
+      <button id="drawer-shade" type="button" aria-label="关闭笔记列表" hidden></button>
+
+      <main class="paper">
+        <div class="toolbar" id="toolbar" role="group" aria-label="Markdown 格式">
+          <select id="block-style" aria-label="段落或标题" title="段落或标题">
+            <option value="0">正文</option>
+            <option value="1">一级标题</option>
+            <option value="2">二级标题</option>
+            <option value="3">三级标题</option>
+            <option value="4">四级标题</option>
+            <option value="5">五级标题</option>
+            <option value="6">六级标题</option>
+          </select>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="format-button" data-action="bold" aria-label="加粗" title="加粗 (**文字**)"><svg class="icon"><use href="#i-bold"/></svg></button>
+          <button class="format-button" data-action="italic" aria-label="斜体" title="斜体 (*文字*)"><svg class="icon"><use href="#i-italic"/></svg></button>
+          <button class="format-button" data-action="strike" aria-label="删除线" title="删除线 (~~文字~~)"><svg class="icon"><use href="#i-strike"/></svg></button>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="format-button" data-action="bulletList" aria-label="无序列表" title="无序列表 (- 空格)"><svg class="icon"><use href="#i-bullet"/></svg></button>
+          <button class="format-button" data-action="orderedList" aria-label="有序列表" title="有序列表 (1. 空格)"><svg class="icon"><use href="#i-ordered"/></svg></button>
+          <button class="format-button" data-action="taskList" aria-label="任务列表" title="任务列表 (- [ ] 空格)"><svg class="icon"><use href="#i-task"/></svg></button>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="format-button" data-action="blockquote" aria-label="引用" title="引用 (> 空格)"><svg class="icon"><use href="#i-quote"/></svg></button>
+          <button class="format-button" data-action="code" aria-label="行内代码" title="行内代码"><svg class="icon"><use href="#i-code"/></svg></button>
+          <button class="format-button" data-action="link" aria-label="插入或编辑链接" title="插入或编辑链接"><svg class="icon"><use href="#i-link"/></svg></button>
+          <details id="more-menu" class="more">
+            <summary class="format-button" aria-label="更多格式" title="更多格式"><svg class="icon"><use href="#i-more"/></svg></summary>
+            <div class="menu">
+              <button data-action="codeBlock">代码块</button>
+              <button data-action="horizontalRule">分隔线</button>
+              <button data-action="insertTable">插入表格</button>
+              <button data-action="imageFolder">图片保存位置</button>
+              <button data-action="addRowAfter" data-table>在下方添加一行</button>
+              <button data-action="addColumnAfter" data-table>在右侧添加一列</button>
+              <button data-action="deleteRow" data-table>删除当前行</button>
+              <button data-action="deleteColumn" data-table>删除当前列</button>
+              <button data-action="deleteTable" data-table>删除当前表格</button>
+            </div>
+          </details>
+        </div>
+
+        <div class="paper-scroll" id="paper-scroll">
+          <input id="note-title" placeholder="无标题笔记" aria-label="笔记标题" autocomplete="off" maxlength="150">
+          <div id="editor"></div>
+        </div>
+
+        <footer class="statusbar">
+          <span class="status" id="save-status" role="status"><span class="status-dot"></span><span id="save-label"></span></span>
+          <button class="text-button" id="retry-save" hidden>重试</button>
+          
+          <span class="spacer"></span>
+          <button class="icon-button delete-button" id="delete-note" aria-label="删除当前笔记" title="删除当前笔记"><svg class="icon"><use href="#i-trash"/></svg></button>
+          <button class="copy-button" id="copy-note"><svg class="icon"><use href="#i-copy"/></svg><span id="copy-label">复制 Markdown</span></button>
+        </footer>
+      </main>
+    </div>
+    <div id="resize-handle" class="resize-handle" title="拖动调整笔记窗大小" aria-hidden="true"><svg class="icon"><use href="#i-resize"/></svg></div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </div>
+
+  <dialog id="delete-dialog">
+    <form method="dialog">
+      <h2>删除这条笔记？</h2>
+      <p id="delete-description"></p>
+      <div class="dialog-actions">
+        <button value="cancel" autofocus>取消</button>
+        <button value="delete" class="danger-button">删除笔记</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="link-dialog">
+    <form id="link-form" method="dialog">
+      <h2>插入链接</h2>
+      <label>链接文字<input id="link-text" type="text" placeholder="选填"></label>
+      <label>链接地址<input id="link-url" type="text" placeholder="https://example.com" required autofocus></label>
+      <p id="link-error" class="error-text" role="alert" hidden>请输入有效的 http、https 或 mailto 链接。</p>
+      <div class="dialog-actions">
+        <button type="button" id="cancel-link">取消</button>
+        <button type="submit" class="copy-button">应用链接</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="copy-dialog">
+    <form method="dialog">
+      <h2>复制 Markdown</h2>
+      <p>选中的内容可用 Ctrl+C 或 ⌘C 复制。</p>
+      <textarea id="copy-text" aria-label="可复制的 Markdown" readonly></textarea>
+      <div class="dialog-actions"><button value="done">完成</button></div>
+    </form>
+  </dialog>
+  <dialog id="image-folder-dialog">
+    <form id="image-folder-form">
+      <h2>图片保存位置</h2>
+      <label>下载文件夹内的目录<input id="image-folder" required maxlength="180"></label>
+      <p id="image-folder-error" class="error-text" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" id="cancel-image-folder">取消</button>
+        <button type="submit" class="copy-button">保存</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
