@@ -270,6 +270,7 @@ function showLinkDialog() {
   $('link-url').value = editor.getAttributes('link').href || ''
   $('link-error').hidden = true
   linkDialog.showModal()
+  $('link-url').focus({ preventScroll: true })
 }
 
 function applyLink(event) {
@@ -444,6 +445,7 @@ function bindEvents() {
     deleteDialog.returnValue = ''
     $('delete-description').textContent = '「' + label(noteFor(deleteId)) + '」将从本机删除。'
     deleteDialog.showModal()
+    deleteDialog.querySelector('button[value="cancel"]').focus({ preventScroll: true })
   })
   deleteDialog.addEventListener('close', async () => {
     const id = deleteId

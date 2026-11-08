@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "页笺 · 网页 Markdown 笔记",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "在网页上打开一扇可拖拽、可缩放的 Markdown 笔记窗。",
   "permissions": [
     "activeTab",
