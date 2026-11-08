@@ -86,6 +86,14 @@
               <button data-action="horizontalRule">分隔线</button>
               <button data-action="insertTable">插入表格</button>
               <button data-action="imageFolder">图片保存位置</button>
+              <label class="theme-setting">主题
+                <select id="theme-choice" aria-label="主题">
+                  <option value="system">跟随系统</option>
+                  <option value="light">浅色</option>
+                  <option value="dark">深色</option>
+                </select>
+              </label>
+              <span id="theme-error" class="error-text" hidden>主题保存失败，请重试。</span>
               <button data-action="addRowAfter" data-table>在下方添加一行</button>
               <button data-action="addColumnAfter" data-table>在右侧添加一列</button>
               <button data-action="deleteRow" data-table>删除当前行</button>

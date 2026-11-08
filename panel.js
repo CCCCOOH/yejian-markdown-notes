@@ -1,3 +1,4 @@
+import { initializeTheme } from './theme.js'
 import { LocalImage, pasteImages, defaultImageFolder, prepareImageCopy } from './images.js'
 import { Editor, StarterKit, Markdown, TaskList, TaskItem, TableKit } from './vendor/editor.js'
 import { request, loadNotes, notePrefix, blankNote, label, plainText } from './notes.js'
@@ -478,6 +479,7 @@ async function start() {
   await request('connect-panel', { ticket })
   history.replaceState(null, '', location.pathname)
   imageFolder = (await chrome.storage.local.get('imageFolder')).imageFolder || defaultImageFolder
+  await initializeTheme()
   saved = await loadNotes()
   const first = sortedNotes()[0]
   if (first) openNote(first.id)

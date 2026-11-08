@@ -61,11 +61,31 @@ def test_dialog_focus():
             print("Warnings after panel load:", warnings)
             # The original regression occurs during HTML parsing, before any dialog opens.
             assert not warnings, warnings
+            # Theme defaults to system and follows live OS changes.
+            page.emulate_media(color_scheme="dark")
+            expect(frame.locator("#theme-choice")).to_have_value("system")
+            expect(frame.locator(".paper")).to_have_css("background-color", "rgb(32, 33, 36)")
+            frame.locator("#more-menu summary").click()
+            frame.locator("#theme-choice").select_option("light")
+            expect(frame.locator(".paper")).to_have_css("background-color", "rgb(255, 255, 255)")
+            page.emulate_media(color_scheme="light")
+            frame.locator("#theme-choice").select_option("dark")
+            expect(frame.locator(".paper")).to_have_css("background-color", "rgb(32, 33, 36)")
+            frame.locator("#more-menu summary").click()
             exercise_dialogs(frame)
             worker.evaluate("() => toggle({id: -1})")
             popup = context.wait_for_event("page") if len(context.pages) < 3 else context.pages[-1]
             popup.wait_for_load_state()
+            # A newly opened window restores the saved choice.
+            expect(popup.locator("#theme-choice")).to_have_value("dark")
+            expect(popup.locator(".paper")).to_have_css("background-color", "rgb(32, 33, 36)")
             exercise_dialogs(popup)
+            popup.locator("#more-menu summary").click()
+            popup.locator("#theme-choice").select_option("system")
+            expect(frame.locator("#theme-choice")).to_have_value("system")
+            expect(frame.locator(".paper")).to_have_css("background-color", "rgb(255, 255, 255)")
+            page.emulate_media(color_scheme="dark")
+            expect(frame.locator(".paper")).to_have_css("background-color", "rgb(32, 33, 36)")
             assert not warnings, warnings
             print("PASS: no autofocus warnings; delete and link dialog focus works in iframe and standalone window")
         finally:
