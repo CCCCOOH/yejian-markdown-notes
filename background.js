@@ -1,4 +1,4 @@
-importScripts('image-storage.js')
+importScripts('image-storage.js', 'github-backup.js')
 const panelURL = chrome.runtime.getURL('panel.html')
 const notePrefix = 'note:'
 const tickets = new Map()
@@ -111,6 +111,16 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     tickets.delete(message.ticket)
     respond({ ok: true })
     return
+  } else if (fromPanel && message.type === 'set-github-config') {
+    operation = (async () => {
+      const previous = (await chrome.storage.local.get('githubConfig')).githubConfig
+      const input = { ...message.config }
+      if (!input.token?.trim()) input.token = previous?.token
+      const config = validateGitHubConfig(input)
+      await chrome.storage.local.set({ githubConfig: config })
+    })()
+  } else if (fromPanel && message.type === 'backup-github') {
+    operation = Promise.resolve().then(() => backupToGitHub(message.files))
   } else if (fromPanel && message.type === 'save-image') {
     operation = Promise.resolve().then(() => saveImage(message))
   } else if (fromPanel && message.type === 'retry-image') {

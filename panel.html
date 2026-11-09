@@ -38,6 +38,11 @@
         <svg class="icon"><use href="#i-sidebar"/></svg>
       </button>
       <span class="spacer"></span>
+      <button class="icon-button" id="backup-github" type="button" aria-label="备份全部笔记到 GitHub" title="备份全部笔记到 GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17H5a4 4 0 0 1-.8-7.9 7 7 0 0 1 13.6 0A4 4 0 0 1 19 17h-2M12 21V11m-4 4 4-4 4 4"/></svg></button>
+      <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="切换主题" title="切换主题">
+        <svg class="icon theme-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+        <svg class="icon theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13a8.5 8.5 0 0 1-9.5-9.5A8.5 8.5 0 1 0 20.5 13Z"/></svg>
+      </button>
       <button class="icon-button" id="close-panel" aria-label="收起笔记窗口" title="收起笔记窗口 (Esc)"><svg class="icon"><use href="#i-close"/></svg></button>
     </header>
 
@@ -86,6 +91,7 @@
               <button data-action="horizontalRule">分隔线</button>
               <button data-action="insertTable">插入表格</button>
               <button data-action="imageFolder">图片保存位置</button>
+              <button id="github-settings" type="button">GitHub 备份设置</button>
               <label class="theme-setting">主题
                 <select id="theme-choice" aria-label="主题">
                   <option value="system">跟随系统</option>
@@ -162,6 +168,23 @@
       <div class="dialog-actions">
         <button type="button" id="cancel-image-folder">取消</button>
         <button type="submit" class="copy-button">保存</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="github-dialog">
+    <form id="github-form">
+      <h2>GitHub 备份</h2>
+      <label>仓库<input id="github-repo" placeholder="用户名/仓库名" required autocomplete="off"></label>
+      <label>分支<input id="github-branch" placeholder="默认分支" autocomplete="off"></label>
+      <label>备份目录<input id="github-folder" value="yejian" required autocomplete="off"></label>
+      <label>访问令牌<input id="github-token" type="password" autocomplete="off"></label>
+      <p>令牌仅保存在本机，需要目标仓库的 Contents 读写权限。公开仓库中的备份也会公开。</p>
+      <p id="github-last"></p>
+      <p id="github-error" class="error-text" role="alert"></p>
+      <div class="dialog-actions">
+        <button id="github-disconnect" type="button">清除连接</button>
+        <button id="github-cancel" type="button">取消</button>
+        <button id="github-save" type="submit" class="copy-button">保存</button>
       </div>
     </form>
   </dialog>

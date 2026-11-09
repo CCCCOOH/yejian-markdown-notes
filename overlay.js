@@ -154,7 +154,8 @@
       background: '#ffffff',
       overflow: 'hidden',
       'z-index': '2147483647',
-      'color-scheme': 'light',
+      // Let the embedded document see the user's preferred scheme.
+      'color-scheme': 'light dark',
     })) host.style.setProperty(name, value, 'important')
     const shadow = host.attachShadow({ mode: 'closed' })
     frame = document.createElement('iframe')
@@ -162,29 +163,60 @@
     frame.allow = 'clipboard-write'
     frame.style.cssText = 'display:block;width:100%;height:100%;border:0;background:#ffffff'
     frame.src = panelURL + '#' + ticket
-    const resize = document.createElement('div')
-    resize.style.cssText = 'position:absolute;right:0;bottom:0;width:24px;height:24px;cursor:nwse-resize;touch-action:none'
-    let resizeStart
-    resize.addEventListener('pointerdown', event => {
-      if (event.button !== 0) return
-      event.preventDefault()
-      resizeStart = { x: event.screenX, y: event.screenY, bounds: { ...bounds } }
-      resize.setPointerCapture(event.pointerId)
-    })
-    resize.addEventListener('pointermove', event => {
-      if (!resizeStart) return
-      const start = resizeStart.bounds
-      layout({
-        ...start,
-        width: Math.min(window.innerWidth - start.x - gap, start.width + event.screenX - resizeStart.x),
-        height: Math.min(window.innerHeight - start.y - gap, start.height + event.screenY - resizeStart.y),
+    shadow.append(frame)
+    for (const direction of ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']) {
+      const resize = document.createElement('div')
+      const corner = direction.length === 2
+      const vertical = direction === 'n' || direction === 's'
+      const cursor = corner ? (direction === 'ne' || direction === 'sw' ? 'nesw' : 'nwse') : vertical ? 'ns' : 'ew'
+      resize.dataset.resize = direction
+      resize.style.cssText = `position:absolute;touch-action:none;z-index:2;cursor:${cursor}-resize;`
+      if (corner) {
+        resize.style.width = resize.style.height = '14px'
+      } else if (vertical) {
+        resize.style.left = resize.style.right = '14px'
+        resize.style.height = '6px'
+      } else {
+        resize.style.top = resize.style.bottom = '14px'
+        resize.style.width = '6px'
+      }
+      if (direction.includes('n')) resize.style.top = '0'
+      if (direction.includes('s')) resize.style.bottom = '0'
+      if (direction.includes('w')) resize.style.left = '0'
+      if (direction.includes('e')) resize.style.right = '0'
+      let start
+      resize.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || !event.isPrimary) return
+        event.preventDefault()
+        start = { x: event.screenX, y: event.screenY, bounds: { ...bounds } }
+        frame.style.pointerEvents = 'none'
+        resize.setPointerCapture(event.pointerId)
       })
-    })
-    resize.addEventListener('lostpointercapture', () => {
-      resizeStart = null
-      chrome.runtime.sendMessage({ type: 'store-bounds', bounds }).catch(() => {})
-    })
-    shadow.append(frame, resize)
+      resize.addEventListener('pointermove', event => {
+        if (!start) return
+        const rect = start.bounds
+        const dx = event.screenX - start.x, dy = event.screenY - start.y
+        let left = rect.x, top = rect.y, right = left + rect.width, bottom = top + rect.height
+        const minWidth = Math.min(320, window.innerWidth - 2 * gap)
+        const minHeight = Math.min(320, window.innerHeight - 2 * gap)
+        if (direction.includes('w')) left = Math.max(gap, Math.min(right - minWidth, left + dx))
+        if (direction.includes('e')) right = Math.min(window.innerWidth - gap, Math.max(left + minWidth, right + dx))
+        if (direction.includes('n')) top = Math.max(gap, Math.min(bottom - minHeight, top + dy))
+        if (direction.includes('s')) bottom = Math.min(window.innerHeight - gap, Math.max(top + minHeight, bottom + dy))
+        layout({ x: left, y: top, width: right - left, height: bottom - top })
+      })
+      const finishResize = () => {
+        if (!start) return
+        start = null
+        frame.style.pointerEvents = ''
+        chrome.runtime.sendMessage({ type: 'store-bounds', bounds }).catch(() => {})
+      }
+      resize.addEventListener('lostpointercapture', finishResize)
+      window.addEventListener('pointerup', finishResize, true)
+      window.addEventListener('pointercancel', finishResize, true)
+      window.addEventListener('blur', finishResize)
+      shadow.append(resize)
+    }
     document.documentElement.append(host)
     bounds = stored ?? { x: window.innerWidth - 816, y: 62, width: 790, height: 565 }
     show()

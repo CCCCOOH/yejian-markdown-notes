@@ -1,7 +1,16 @@
+import { buildClipboardContent, writeNoteClipboard } from './clipboard.js'
+import { initializeBackup } from './backup-ui.js'
 import { initializeTheme } from './theme.js'
-import { LocalImage, pasteImages, defaultImageFolder, prepareImageCopy } from './images.js'
-import { Editor, StarterKit, Markdown, TaskList, TaskItem, TableKit } from './vendor/editor.js'
+import { LocalImage, pasteImages, defaultImageFolder } from './images.js'
+import { Editor, Extension, wrappingInputRule, StarterKit, Markdown, TaskList, TaskItem, TableKit } from './vendor/editor.js'
 import { request, loadNotes, notePrefix, blankNote, label, plainText } from './notes.js'
+
+const ChineseQuoteInput = Extension.create({
+  name: 'chineseQuoteInput',
+  addInputRules() {
+    return [wrappingInputRule({ find: /^\s*》\s$/, type: this.editor.schema.nodes.blockquote })]
+  },
+})
 
 const $ = id => document.getElementById(id)
 const embedded = window.parent !== window
@@ -188,7 +197,7 @@ function openNote(id, focus = false) {
           isAllowedUri: (url, context) => allowedURL.test(url) && context.defaultValidate(url),
         },
       }),
-      LocalImage,
+      ChineseQuoteInput, LocalImage,
       TaskList, TaskItem.configure({ nested: true }),
       TableKit.configure({ table: { renderWrapper: true } }),
       Markdown.configure({ markedOptions: { gfm: true } }),
@@ -301,33 +310,14 @@ function applyLink(event) {
 }
 
 async function copyNote() {
-  try { await prepareImageCopy(editor.getJSON()) }
-  catch (error) { announce(error.message); return }
-  const title = titleInput.value.trim().replace(/[\\`*_[\]<>#]/g, '\\$&')
-  const body = editor.getMarkdown()
-  const markdown = [title && '# ' + title, body].filter(Boolean).join('\n\n')
-  const previousFocus = document.activeElement
-  const field = document.createElement('textarea')
-  field.value = markdown
-  field.style.cssText = 'position:fixed;top:0;left:-10000px'
-  document.body.append(field)
-  field.select()
-  let copied = false
-  try { copied = document.execCommand('copy') } catch {}
-  field.remove()
-  previousFocus?.focus({ preventScroll: true })
-  if (!copied) {
-    try {
-      await navigator.clipboard.writeText(markdown)
-      copied = true
-    } catch {}
-  }
-  if (!copied) {
-    $('copy-text').value = markdown
-    copyDialog.showModal()
-    $('copy-text').select()
-    return
-  }
+  let content
+  try {
+    content = await buildClipboardContent(editor, titleInput.value.trim())
+    if (!await writeNoteClipboard(content)) {
+      announce('无法写入图文剪贴板，请允许剪贴板访问后重试。')
+      return
+    }
+  } catch (error) { announce(error.message || '复制失败，请重试。'); return }
   $('copy-label').textContent = '已复制'
   clearTimeout(copyTimer)
   copyTimer = setTimeout(() => { $('copy-label').textContent = '复制 Markdown' }, 1300)
@@ -485,6 +475,7 @@ async function start() {
   if (first) openNote(first.id)
   else newNote()
   bindEvents()
+  initializeBackup(sortedNotes, () => editor, announce)
   setLibrary(!small.matches)
   chrome.storage.onChanged.addListener(updateFromStorage)
   $('loading').hidden = true

@@ -430,3 +430,19 @@ dialog textarea { resize: vertical; min-height: 75px; font-family: ui-monospace,
 .toast { color: var(--paper); }
 .theme-setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px; border-top: 1px solid var(--line); font-size: 12px; }
 #theme-choice { background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 5px; padding: 3px; }
+
+.theme-toggle { position: relative; }
+.theme-toggle .icon { position: absolute; transition: transform 240ms ease, opacity 180ms ease; }
+.theme-sun { opacity: 1; transform: rotate(0) scale(1); }
+.theme-moon { opacity: 0; transform: rotate(-70deg) scale(.5); }
+:root[data-resolved-theme="dark"] .theme-sun { opacity: 0; transform: rotate(70deg) scale(.5); }
+:root[data-resolved-theme="dark"] .theme-moon { opacity: 1; transform: rotate(0) scale(1); }
+.paper, .titlebar, .toolbar, .library, .statusbar { transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle .icon, .paper, .titlebar, .toolbar, .library, .statusbar { transition: none; }
+}
+
+.backing-up .icon { animation: backup-pulse 900ms ease-in-out infinite alternate; }
+@keyframes backup-pulse { to { opacity: .4; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .backing-up .icon { animation: none; } }
+#github-dialog { max-height: calc(100dvh - 24px); overflow: auto; }
